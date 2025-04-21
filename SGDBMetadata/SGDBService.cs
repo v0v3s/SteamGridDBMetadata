@@ -31,7 +31,7 @@ namespace SGDBMetadata
 
         public RestClient RestClient { get; set; }
 
-        public List<T> Execute<T>(RestRequest request) where T : new()
+        public List<T> Execute<T>(RestRequest request, bool pagination = true) where T : new()
         {
             request.OnBeforeDeserialization = resp => { resp.ContentType = "application/json"; };
             var logger = LogManager.GetLogger();
@@ -53,7 +53,7 @@ namespace SGDBMetadata
 
                 var json = Newtonsoft.Json.JsonConvert.DeserializeObject<ResponseModel<T>>(response.Content);
                 items.AddRange(json.data);
-                if (json.data.Count > 0)
+                if (json.data.Count > 0 && pagination)
                 {
                     page++;
                 } else
@@ -72,7 +72,7 @@ namespace SGDBMetadata
             logger.Info(searchName);
             var request = new RestRequest("search/autocomplete/{searchName}", Method.GET);
             request.AddParameter("searchName", searchName, ParameterType.UrlSegment);
-            return Execute<SearchModel>(request);
+            return Execute<SearchModel>(request, false);
         }
 
         public List<GridModel> getSGDBGameGridByAppId(string platform, string gameId)
